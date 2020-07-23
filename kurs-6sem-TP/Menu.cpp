@@ -20,7 +20,16 @@ Menu::Menu(string cursor)
 
 Menu::~Menu()
 {
-	delete[] opt;
+	if (num == 1)
+	{
+		delete opt;
+		delete ret;
+	}
+	else if (num > 1)
+	{
+		delete[] opt;
+		delete[] ret;
+	}
 }
 
 void Menu::SetCursor(string cursor)
@@ -56,8 +65,16 @@ void Menu::AddOption(string opt, int ret)
 		opt_tmp[num] = opt;
 		ret_tmp[num] = ret;
 
-		delete[] this->opt;
-		delete[] this->ret;
+		if (num == 1)
+		{
+			delete this->opt;
+			delete this->ret;
+		}
+		else
+		{
+			delete[] this->opt;
+			delete[] this->ret;
+		}
 		this->opt = opt_tmp;
 		this->ret = ret_tmp;
 
@@ -70,6 +87,11 @@ void Menu::Display()
 	for (int i = 0; i < num; ++i)
 	{
 		if (i == active) cout << cursor;
+		else
+		{
+			for(int i = 0; i < cursor.length() - 1; ++i) 
+				cout << "  ";
+		}
 		cout << opt[i] << endl;
 	}
 }
@@ -79,15 +101,26 @@ int Menu::ReadInput()
 	switch (_getch())
 	{
 	case 72:
-		if (active) --active;
-		return 1;
+		if (active)
+		{
+			--active;
+			return 1;
+		}
+		else return 2;
+
 	case 80:
-		if (active < num - 1) ++active;
-		return 1;
+		if (active < num - 1) 
+		{
+			++active;
+			return 1;
+		}
+		else return 2;
+
 	case 13:
 		return 0;
+
 	default:
-		return 1;
+		return 2;
 	}
 }
 

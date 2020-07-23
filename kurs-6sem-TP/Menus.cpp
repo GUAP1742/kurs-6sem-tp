@@ -14,36 +14,23 @@ void Start()
 
 int Mode()
 {
-	int n = 3, ex = 0;
-	string cursor[4] = { "> ", "  ", "  ", "  " };
+	Menu menu;
+	menu.AddOption("<3> диска", 3);
+	menu.AddOption("<4> диска", 4);
+	menu.AddOption("<5> дисков", 5);
+	menu.AddOption("<6> дисков", 6);
 
-	while (!ex)
+	int ret = 1;
+	do
 	{
-		system("cls");
-		cout << "Выберите режим игры:" << endl << endl;
-		cout << cursor[0] << "<3> диска" << endl;
-		cout << cursor[1] << "<4> диска" << endl;
-		cout << cursor[2] << "<5> дисков" << endl;
-		cout << cursor[3] << "<6> дисков" << endl;
-
-		switch (_getch())
+		if (ret != 2)
 		{
-		case 72:
-			if (n != 3) --n;
-			cursor[n - 2] = "  ";
-			cursor[n - 3] = "> ";
-			break;
-		case 80:
-			if (n != 6) ++n;
-			cursor[n - 4] = "  ";
-			cursor[n - 3] = "> ";
-			break;
-		case 13:
-			return n;
-		default:
-			break;
+			system("cls");
+			menu.Display();
 		}
-	}
+	} while (ret = menu.ReadInput());
+
+	return menu.Return();
 }
 
 void Initial(int n)
@@ -137,7 +124,8 @@ string PrintLayer(int i)
 
 int Action(char& o)
 {
-	string cursor[2] = { "> ", "  " };
+	Menu menu;
+	int ret = 1;
 	int i = 0;
 
 	switch (o)
@@ -146,16 +134,19 @@ int Action(char& o)
 		if (active != 0) --active;
 		else return 0;
 		break;
+
 	case 77:
 		if (active != 2) ++active;
 		else return 0;
 		break;
+
 	case 72:
 		if (!picked) picked = stick[active]->Pick();
 		else return 0;
 		from = active;
 		if (!picked) return 0;
 		break;
+
 	case 80:
 		if (picked)
 		{
@@ -168,34 +159,23 @@ int Action(char& o)
 		}
 		else return 0;
 		break;
+
 	case 8:
-		while (o)
+		menu.AddOption("<0> Нет", 0);
+		menu.AddOption("<1> Да", 1);
+		do
 		{
-			system("cls");
-			cout << "Выйти?" << endl << endl;
-			cout << cursor[0] << "<0> Нет" << endl;
-			cout << cursor[1] << "<1> Да" << endl;
-			switch (_getch())
+			if (ret != 2)
 			{
-			case 72:
-				if (i) --i;
-				cursor[0] = "> ";
-				cursor[1] = "  ";
-				break;
-			case 80:
-				if (!i) ++i;
-				cursor[0] = "  ";
-				cursor[1] = "> ";
-				break;
-			case 13:
-				if (i) o = 0;
-				else return 1;
-				break;
-			default:
-				break;
+				system("cls");
+				cout << "Выйти?" << endl << endl;
+				menu.Display();
 			}
-		}
-		break;
+		} while (ret = menu.ReadInput());
+
+		if (menu.Return() == 1) o = 0;
+		return 1;
+
 	default:
 		return 0;
 	}
@@ -302,20 +282,25 @@ int ScoresScreen()
 						if (uname[i] == 'A') uname[i] = '9';
 						else --uname[i];
 						break;
+
 					case 80:
 						if (uname[i] == 'Z') break;
 						if (uname[i] == '9') uname[i] = 'A';
 						else ++uname[i];
 						break;
+
 					case 75:
 						if (i > 0) --i;
 						break;
+
 					case 77:
 						if (i < 5) ++i;
 						break;
+
 					case 13:
 						ex = 1;
 						break;
+
 					default:
 						break;
 					}
@@ -392,32 +377,21 @@ int ScoresScreen()
 	delete stick[1];
 	delete stick[2];
 
-	string cursor[2] = { "  ", "> " };
-	int c = 1;
+	Menu menu;
+	menu.AddOption("<1> Новая игра", 1);
+	menu.AddOption("<0> Выход", 0);
 
-	while (1)
+	int ret = 1;
+	do
 	{
-		system("cls");
-		cout << cursor[1] << "<1> Новая игра" << endl;
-		cout << cursor[0] << "<0> Выход" << endl;
-		switch (_getch())
+		if (ret != 2)
 		{
-		case 72:
-			if (!c) ++c;
-			cursor[1] = "> ";
-			cursor[0] = "  ";
-			break;
-		case 80:
-			if (c) --c;
-			cursor[1] = "  ";
-			cursor[0] = "> ";
-			break;
-		case 13:
-			return c;
-		default:
-			break;
+			system("cls");
+			menu.Display();
 		}
-	}
+	} while (ret = menu.ReadInput());
+
+	return menu.Return();
 }
 
 int Game(int n)

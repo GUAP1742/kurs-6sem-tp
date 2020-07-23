@@ -1,5 +1,6 @@
 #pragma once
 #include "Stick.h"
+#include "Menu.h"
 #include <iostream>
 #include <Windows.h>
 #include <conio.h>
