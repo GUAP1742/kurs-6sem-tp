@@ -149,11 +149,13 @@
   <ItemGroup>
     <ClCompile Include="Disk.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Menus.cpp" />
     <ClCompile Include="Stick.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Disk.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="Menus.h" />
     <ClInclude Include="Stick.h" />
   </ItemGroup>
