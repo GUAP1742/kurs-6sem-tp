@@ -1,15 +1,75 @@
 #include "Menus.h"
 
 using namespace std;
+using namespace sf;
 
 int moves, alert, active, from, num, win;
 Stick* stick[3];
 Disk* picked;
 
+RenderWindow window(VideoMode(640, 360), "Hanoi tower");
+Clock clk;
+
 void Start()
 {
+#if MODE == 0
+
 	cout << "Добро пожаловать в игру \"Ханойская башня\"!" << endl;
 	Sleep(3000);
+
+#elif MODE == 1
+
+	float scale = 0.5f, alpha = 0;
+
+	Texture screenTxr;
+	screenTxr.loadFromFile("startscreen.png");
+	screenTxr.setSmooth(true);
+
+	Sprite screenSpt(screenTxr);
+	screenSpt.setScale(Vector2f(scale, scale));
+	screenSpt.move(320 - 285 * scale, 180 - 60 * scale);
+
+	float time = 0, timer = 0, i = 0;
+	while (window.isOpen() && timer <= 3000)
+	{
+		time += clk.getElapsedTime().asMicroseconds();
+		clk.restart();
+		if (time >= 1000)
+		{
+			time = 0;
+			timer++;
+			scale += 0.0002f;
+
+			if (timer <= 1000)
+			{
+				alpha += 0.255f;
+				screenSpt.setColor(Color(255, 255, 255, alpha));
+			}
+			else if (timer > 2000)
+			{
+				alpha -= 0.255f;
+				screenSpt.setColor(Color(255, 255, 255, alpha));
+			}
+		}
+
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::Closed)
+				window.close();
+		}
+		
+		screenSpt.setScale(Vector2f(scale, scale));
+		screenSpt.setPosition(0, 0);
+		screenSpt.move(320 - 285 * scale, 180 - 60 * scale);
+
+		window.clear(Color::White);
+		window.draw(screenSpt);
+		window.display();
+	}
+	system("pause");
+
+#endif
 }
 
 int Mode()
@@ -236,7 +296,7 @@ int ScoresScreen()
 		fin.open(fname);
 		if (!fin.fail())
 		{
-			while (!fin.eof())
+			while (!fin.eof() && i < 10)
 			{
 				name[i] = "     ";
 				score[i] = 0;

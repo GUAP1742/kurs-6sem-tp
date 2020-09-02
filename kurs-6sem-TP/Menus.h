@@ -1,4 +1,5 @@
 #pragma once
+#include <SFML/Graphics.hpp>
 #include "Stick.h"
 #include "Menu.h"
 #include <iostream>
@@ -6,6 +7,8 @@
 #include <conio.h>
 #include <fstream>
 #include <string>
+
+#define MODE 1
 
 using namespace std;
 
