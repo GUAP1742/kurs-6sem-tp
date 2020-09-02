@@ -7,8 +7,12 @@ int moves, alert, active, from, num, win;
 Stick* stick[3];
 Disk* picked;
 
+#if MODE == 1
+
 RenderWindow window(VideoMode(640, 360), "Hanoi tower");
 Clock clk;
+
+#endif
 
 void Start()
 {
@@ -32,6 +36,13 @@ void Start()
 	float time = 0, timer = 0, i = 0;
 	while (window.isOpen() && timer <= 3000)
 	{
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::Closed)
+				window.close();
+		}
+
 		time += clk.getElapsedTime().asMicroseconds();
 		clk.restart();
 		if (time >= 1000)
@@ -51,13 +62,6 @@ void Start()
 				screenSpt.setColor(Color(255, 255, 255, alpha));
 			}
 		}
-
-		Event event;
-		while (window.pollEvent(event))
-		{
-			if (event.type == Event::Closed)
-				window.close();
-		}
 		
 		screenSpt.setScale(Vector2f(scale, scale));
 		screenSpt.setPosition(0, 0);
@@ -67,13 +71,14 @@ void Start()
 		window.draw(screenSpt);
 		window.display();
 	}
-	system("pause");
 
 #endif
 }
 
 int Mode()
 {
+#if MODE == 0
+
 	Menu menu;
 	menu.AddOption("<3> диска", 3);
 	menu.AddOption("<4> диска", 4);
@@ -91,6 +96,59 @@ int Mode()
 	} while (ret = menu.ReadInput());
 
 	return menu.Return();
+
+#elif MODE == 1
+
+	Font font;
+	font.loadFromFile("Bender.ttf");
+
+	Text opt[4];
+
+	opt[0].setString(L"<3> диска");
+	opt[1].setString(L"<4> диска");
+	opt[2].setString(L"<5> дисков");
+	opt[3].setString(L"<6> дисков");
+
+	for (int i = 0; i < 4; ++i)
+	{
+		opt[i].setFont(font);
+		opt[i].setCharacterSize(50);
+		opt[i].move(200, 60 + 50 * i);
+	}
+
+	while (window.isOpen())
+	{
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::Closed)
+				window.close();
+
+			if (event.type == Event::MouseButtonReleased && event.mouseButton.button == Mouse::Left)
+			{
+				for (int i = 0; i < 4; ++i)
+				{
+					if (IntRect(0, 75 + 50 * i, 640, 40).contains(Mouse::getPosition(window)))
+						return i + 3;
+				}
+			}
+		}
+
+		for (int i = 0; i < 4; ++i)
+		{
+			opt[i].setFillColor(Color(0, 0, 85));
+
+			if (IntRect(0, 75 + 50 * i, 640, 40).contains(Mouse::getPosition(window)))
+				opt[i].setFillColor(Color(252, 0, 85));
+
+			window.draw(opt[i]);
+		}
+
+		window.display();
+	}
+
+	return 3;
+#endif
 }
 
 void Initial(int n)
