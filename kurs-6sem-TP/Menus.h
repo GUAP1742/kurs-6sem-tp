@@ -9,19 +9,21 @@
 
 #define MODE 1
 
-//#if MODE == 1
-
 #include "Menu.h"
 
-//#elif MODE == 1
 
-#include "GMenu.h" 
 
-//#endif
+
 
 using namespace std;
 
+#if MODE == 1
+
+void Rules();
 int MainMenu();
+
+#endif
+
 void Start();
 int Mode();
 void Initial(int n);
