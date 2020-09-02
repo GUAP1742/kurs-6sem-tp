@@ -26,6 +26,7 @@ int main()
     Start();
     while (cont)
     {
+        while (MainMenu());
         n = Mode();
         cont = Game(n);
     }

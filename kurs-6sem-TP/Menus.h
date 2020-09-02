@@ -1,7 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Stick.h"
-#include "Menu.h"
 #include <iostream>
 #include <Windows.h>
 #include <conio.h>
@@ -10,8 +9,19 @@
 
 #define MODE 1
 
+//#if MODE == 1
+
+#include "Menu.h"
+
+//#elif MODE == 1
+
+#include "GMenu.h" 
+
+//#endif
+
 using namespace std;
 
+int MainMenu();
 void Start();
 int Mode();
 void Initial(int n);

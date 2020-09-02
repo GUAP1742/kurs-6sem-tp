@@ -14,6 +14,73 @@ Clock clk;
 
 #endif
 
+int MainMenu()
+{
+	Font font;
+	font.loadFromFile("Bender.ttf");
+
+	Text opt[4];
+
+	opt[0].setString(L"<*> Новая игра");
+	opt[1].setString(L"<*> Правила игры");
+	opt[2].setString(L"<*> Рекорды");
+	opt[3].setString(L"<*> Выход");
+
+	for (int i = 0; i < 4; ++i)
+	{
+		opt[i].setFont(font);
+		opt[i].setCharacterSize(50);
+		opt[i].move(150, 60 + 50 * i);
+	}
+
+	while (window.isOpen())
+	{
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::Closed)
+				window.close();
+
+			if (event.type == Event::MouseButtonReleased && event.mouseButton.button == Mouse::Left)
+			{
+				for (int i = 0; i < 4; ++i)
+				{
+					if (IntRect(0, 75 + 50 * 0, 640, 40).contains(Mouse::getPosition(window)))
+						return 0;
+
+					if (IntRect(0, 75 + 50 * 1, 640, 40).contains(Mouse::getPosition(window)))
+						;
+						
+					if (IntRect(0, 75 + 50 * 2, 640, 40).contains(Mouse::getPosition(window)))
+						;
+
+					if (IntRect(0, 75 + 50 * 3, 640, 40).contains(Mouse::getPosition(window)))
+					{
+						window.close();
+						exit(0);
+					}
+				}
+			}
+		}
+
+		window.clear(Color::White);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			opt[i].setFillColor(Color(0, 0, 85));
+
+			if (IntRect(0, 75 + 50 * i, 640, 40).contains(Mouse::getPosition(window)))
+				opt[i].setFillColor(Color(252, 0, 85));
+
+			window.draw(opt[i]);
+		}
+
+		window.display();
+	}
+
+	return 1;
+}
+
 void Start()
 {
 #if MODE == 0
@@ -134,6 +201,8 @@ int Mode()
 			}
 		}
 
+		window.clear(Color::White);
+
 		for (int i = 0; i < 4; ++i)
 		{
 			opt[i].setFillColor(Color(0, 0, 85));
@@ -246,6 +315,9 @@ int Action(char& o)
 	int ret = 1;
 	int i = 0;
 
+	Font font;
+	Text opt[2];
+
 	switch (o)
 	{
 	case 75:
@@ -279,6 +351,9 @@ int Action(char& o)
 		break;
 
 	case 8:
+
+#if MODE == 0
+
 		menu.AddOption("<0> Нет", 0);
 		menu.AddOption("<1> Да", 1);
 		do
@@ -292,6 +367,57 @@ int Action(char& o)
 		} while (ret = menu.ReadInput());
 
 		if (menu.Return() == 1) o = 0;
+
+#elif MODE == 1
+
+		font.loadFromFile("Bender.ttf");
+
+		opt[0].setString(L"<*> Выйти");
+		opt[1].setString(L"<*> Продолжить игру");
+
+		for (int i = 0; i < 2; ++i)
+		{
+			opt[i].setFont(font);
+			opt[i].setCharacterSize(50);
+			opt[i].move(100, 60 + 50 * i);
+		}
+
+		while (window.isOpen())
+		{
+			Event event;
+			while (window.pollEvent(event))
+			{
+				if (event.type == Event::Closed)
+					window.close();
+
+				if (event.type == Event::MouseButtonReleased && event.mouseButton.button == Mouse::Left)
+				{
+					for (int i = 0; i < 2; ++i)
+					{
+						if (IntRect(0, 75 + 50 * i, 640, 40).contains(Mouse::getPosition(window)))
+						{
+							if (i == 0) o = 0;
+							return 1;
+						}
+					}
+				}
+			}
+
+			window.clear(Color::White);
+
+			for (int i = 0; i < 2; ++i)
+			{
+				opt[i].setFillColor(Color(0, 0, 85));
+
+				if (IntRect(0, 75 + 50 * i, 640, 40).contains(Mouse::getPosition(window)))
+					opt[i].setFillColor(Color(252, 0, 85));
+
+				window.draw(opt[i]);
+			}
+
+			window.display();
+		}
+#endif
 		return 1;
 
 	default:
