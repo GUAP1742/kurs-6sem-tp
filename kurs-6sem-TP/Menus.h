@@ -11,10 +11,6 @@
 
 #include "Menu.h"
 
-
-
-
-
 using namespace std;
 
 #if MODE == 1

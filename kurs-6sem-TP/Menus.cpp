@@ -3,14 +3,15 @@
 using namespace std;
 using namespace sf;
 
-int moves, alert, active, from, num, win;
+int moves, timer, alert, active, from, num, win;
 Stick* stick[3];
 Disk* picked;
+
+Clock clk;
 
 #if MODE == 1
 
 RenderWindow window(VideoMode(640, 360), "Hanoi tower");
-Clock clk;
 
 void Rules()
 {
@@ -298,9 +299,12 @@ int Mode()
 
 void Initial(int n)
 {
+	clk.restart();
+
 	alert = 0;
 	active = 0;
 	moves = 0;
+	timer = 0;
 	win = 0;
 	num = n;
 	picked = nullptr;
@@ -419,7 +423,11 @@ int Action(char& o)
 			if (stick[active]->Put(picked))
 			{
 				picked = nullptr;
-				if (from != active) ++moves;
+				if (from != active)
+				{
+					++moves;
+					timer = clk.getElapsedTime().asSeconds();
+				}
 			}
 			else alert = 1;
 		}
@@ -511,7 +519,7 @@ void GameScreen()
 	while (1)
 	{
 		system("cls");
-		cout << "Перемещений: " << moves << endl;
+		cout << "Перемещений: " << moves << "  " << "Время: " << timer << endl;
 		if (alert) cout << "\aНельзя ставить большие диски поверх меньших!" << endl;
 		else if (win)
 		{
@@ -696,6 +704,12 @@ int ScoresScreen()
 
 #elif MODE == 1
 
+///// STICKS DELETION /////
+	delete stick[0];
+	delete stick[1];
+	delete stick[2];
+
+///// NON-VISUAL VARIABLES /////
 	ifstream fin;
 	ofstream fout;
 	string fname = "GScores" + to_string(num) + ".txt";
@@ -707,9 +721,9 @@ int ScoresScreen()
 	Font font;
 	font.loadFromFile("Bender.ttf");
 
-	Text tname[10], tdots[10], 
-		tscore[10], ttime[10],
-		cont;
+///// RECORDS WINDOW TEXTS /////
+	Text tname[10], tdots[10],
+		tscore[10], ttime[10], cont;
 
 	for (int i = 0; i < 10; ++i)
 	{
@@ -738,9 +752,36 @@ int ScoresScreen()
 	cont.move(270, 10 + 30 * 10);
 	cont.setString(L"Продолжить >");
 
+///// NAME WINDOW TEXTS /////
+	Text tuname[9];
+
+	for (int i = 0; i < 9; ++i)
+	{
+		tuname[i].setFont(font);
+		tuname[i].setCharacterSize(50);
+		if (i >= 1 && i <= 5)
+		{
+			tuname[i].move(130 + i * 50, 20 + 50);
+		}	
+		tuname[i].setFillColor(Color(0, 0, 85));
+	}
+	tuname[0].setString(L"Введите имя: (для переключения букв используйте колесо мыши)");
+	tuname[0].setCharacterSize(20);
+	tuname[0].move(10, 10);
+
+	tuname[6].setString(L"v");
+
+	tuname[7].setString(L"v");
+	tuname[7].rotate(180);
+
+	tuname[8].setString(L"Продолжить >");
+	tuname[8].setCharacterSize(35);
+	tuname[8].move(270, 10 + 30 * 10);
+
 	fin.open(fname);
 	if (!fin.fail())
 	{
+	///// READING THE EXISTING FILE /////
 		while (!fin.eof() && i < 10)
 		{
 			name[i] = "     ";
@@ -766,15 +807,148 @@ int ScoresScreen()
 		}
 		fin.close();
 
+	///// IF THE GAME WAS FINISHED /////
 		if (win)
 		{
+			if ((moves < score[9]) || ((moves == score[9]) && (timer <= time[9])))
+			{
+			///// NAME WINDOW /////
+				n = 1;
+				int ex = 0;
+				while (window.isOpen() && !ex)
+				{
+					Event event;
+					while (window.pollEvent(event))
+					{
+						if (event.type == Event::Closed)
+							window.close();
 
+						if (event.type == Event::MouseWheelMoved)
+						{
+							if (IntRect(130 + n * 50, 20 + 50 - 10, 50 - 20, 50 + 15).contains(Mouse::getPosition(window)))
+							{
+								if (event.mouseWheel.delta > 0)
+								{
+									if (uname[n - 1] == '0') break;
+									if (uname[n - 1] == 'A') uname[n - 1] = '9';
+									else --uname[n - 1];
+								}
+								else if (event.mouseWheel.delta < 0)
+								{
+									if (uname[n - 1] == 'Z') break;
+									if (uname[n - 1] == '9') uname[n - 1] = 'A';
+									else ++uname[n - 1];
+								}
+							}
+						}
+
+						if (event.type == Event::MouseButtonReleased && event.mouseButton.button == Mouse::Left)
+						{
+							if (IntRect(270, 20 + 30 * 10, 220, 30).contains(Mouse::getPosition(window)))
+								ex = 1;
+						}
+					}
+
+					window.clear(Color::White);
+
+					for (int i = 0; i < 9; ++i)
+					{
+						tuname[8].setFillColor(Color(0, 0, 85));
+
+						for (int j = 1; j <= 5; ++j)
+						{
+							tuname[j].setString(uname[i - 1]);
+
+							tuname[j].setFillColor(Color(0, 0, 85));
+							tuname[6].setFillColor(Color(0, 0, 85));
+							tuname[7].setFillColor(Color(0, 0, 85));
+
+							if (IntRect(130 + j * 50, 20 + 50 - 10, 50 - 20, 50 + 15).contains(Mouse::getPosition(window)))
+							{
+								tuname[j].setFillColor(Color(252, 0, 85));
+								tuname[6].setFillColor(Color(252, 0, 85));
+								tuname[7].setFillColor(Color(252, 0, 85));
+								n = j;
+								break;
+							}
+						}
+
+						tuname[6].setPosition(132 + n * 50, 20 + 5);
+						tuname[7].setPosition(132 + n * 50 + 25, 20 + 50 + 50 * 2 + 8);
+
+						if (IntRect(270, 20 + 30 * 10, 220, 30).contains(Mouse::getPosition(window)))
+							tuname[8].setFillColor(Color(252, 0, 85));
+
+						if (i != 6 && i != 7)
+							window.draw(tuname[i]);
+						else if((int)(clk.getElapsedTime().asSeconds() * 100) % 100 < 25 ||
+							((int)(clk.getElapsedTime().asSeconds() * 100) % 100 >= 50 &&
+							(int)(clk.getElapsedTime().asSeconds() * 100) % 100 < 75))
+							window.draw(tuname[i]);
+					}
+
+					window.display();
+				}
+
+				if (ex)
+				{
+				///// FINDING NEW RECORD POSITION /////
+					for (i = 0; i < 10; ++i)
+					{
+						if ((moves < score[i]) || ((moves == score[i]) && (timer <= time[i])))
+						{
+							n = i;
+							break;
+						}
+					}
+					for (i = 9; i >= n; --i)
+					{
+						if (!i) break;
+						str[i] = str[i - 1];
+					}
+					str[n] = uname;
+					str[n] += "\t" + to_string(moves) + "\t" + to_string(timer);
+
+				///// SETUPS FOR RECORDS WINDOW /////
+					for (i = 0; i < 10; ++i)
+					{
+						score[i] = 0;
+						time[i] = 0;
+						for (j = 0; str[i][j] != '\t'; ++j) {
+							name[i][j] = str[i][j];
+						}
+						tname[i].setString(name[i]);
+						tdots[i].setString(".........................................");
+						for (++j; str[i][j] != '\t'; ++j) {
+							score[i] *= 10;
+							score[i] += str[i][j] - '0';
+						}
+						tscore[i].setString(to_string(score[i]));
+						for (++j; str[i][j] != '\0'; ++j) {
+							time[i] *= 10;
+							time[i] += str[i][j] - '0';
+						}
+						ttime[i].setString(to_string(time[i] / 60) + ':' + to_string((time[i] % 60) / 10) + to_string((time[i] % 60) % 10));
+					}
+
+				///// OVERWRITING THE FILE /////
+					fout.open(fname);
+					if (!fout.fail())
+					{
+						for (i = 0; i < 10; ++i)
+						{
+							fout << str[i] << endl;
+						}
+						fout.close();
+					}
+					else cout << "Ошибка записи в файл рекордов!" << endl;
+				}
+			}
 		}
-
-
 	}
 	else cout << "Ошибка чтения из файла рекордов!" << endl;
 
+///// RECORDS WINDOW /////
 	while (window.isOpen())
 	{
 		Event event;
@@ -808,149 +982,6 @@ int ScoresScreen()
 
 		window.display();
 	}
-	//else cout << "Ошибка чтения из файла рекордов!" << endl;
-
-	/*if (win)
-	{
-		fin.open(fname);
-		if (!fin.fail())
-		{
-			while (!fin.eof() && i < 10)
-			{
-				name[i] = "     ";
-				score[i] = 0;
-				getline(fin, str[i], '\n');
-				for (j = 0; str[i][j] != '\t'; ++j) {
-					name[i][j] = str[i][j];
-					cout << name[i][j];
-				}
-				cout << "....................";
-				for (++j; str[i][j] != '\0'; ++j) {
-					score[i] *= 10;
-					score[i] += str[i][j] - '0';
-				}
-				cout << score[i];
-				++i;
-				cout << endl;
-			}
-			fin.close();
-
-			if (moves > score[9])
-			{
-				cout << endl << "Ваш результат: " << moves << endl;
-				cout << "Пробуйте ещё раз, чтобы попасть в десятку лучших!" << endl << endl;
-			}
-			else
-			{
-				i = 0;
-				int ex = 0;
-				while (!ex)
-				{
-					system("cls");
-					cout << "Введите имя:" << endl << endl;
-					for (j = 0; j < i; ++j)
-						cout << " ";
-					cout << "v" << endl;
-					for (j = 0; j < 5; ++j)
-						cout << uname[j];
-
-					switch (_getch())
-					{
-					case 72:
-						if (uname[i] == '0') break;
-						if (uname[i] == 'A') uname[i] = '9';
-						else --uname[i];
-						break;
-
-					case 80:
-						if (uname[i] == 'Z') break;
-						if (uname[i] == '9') uname[i] = 'A';
-						else ++uname[i];
-						break;
-
-					case 75:
-						if (i > 0) --i;
-						break;
-
-					case 77:
-						if (i < 5) ++i;
-						break;
-
-					case 13:
-						ex = 1;
-						break;
-
-					default:
-						break;
-					}
-				}
-
-				for (i = 0; i < 10; ++i)
-				{
-					if (moves <= score[i])
-					{
-						n = i;
-						break;
-					}
-				}
-
-				for (i = 9; i >= n; --i)
-				{
-					if (!i) break;
-					str[i] = str[i - 1];
-				}
-				str[n] = uname;
-				str[n] += "\t" + to_string(moves);
-
-				system("cls");
-				for (i = 0; i < 10; ++i)
-				{
-					for (j = 0; str[i][j] != '\t'; ++j)
-						cout << str[i][j];
-					cout << "....................";
-					for (++j ; str[i][j] != '\0'; ++j)
-						cout << str[i][j];
-					cout << endl;
-				}
-
-				fout.open(fname);
-				if (!fout.fail())
-				{
-					for (i = 0; i < 10; ++i)
-					{
-						fout << str[i] << endl;
-					}
-					fout.close();
-				}
-				else cout << "Ошибка записи в файл рекордов!" << endl;
-			}
-		}
-		else cout << "Ошибка чтения из файла рекордов!" << endl;
-
-		cout << endl;
-		system("pause");
-	}*/
-
-	delete stick[0];
-	delete stick[1];
-	delete stick[2];
-
-	/*Menu menu;
-	menu.AddOption("<1> Новая игра", 1);
-	menu.AddOption("<0> Выход", 0);
-
-	int ret = 1;
-	do
-	{
-		if (ret != 2)
-		{
-			system("cls");
-			menu.Display();
-		}
-	} while (ret = menu.ReadInput());
-
-	return menu.Return();*/
-
 	return 1;
 #endif
 }
