@@ -316,6 +316,8 @@ void Initial(int n)
 	stick[0]->Fill(n);
 }
 
+#if MODE == 0
+
 string PrintActive()
 {
 	string s[3];
@@ -389,6 +391,8 @@ string PrintLayer(int i)
 	return s[0] + "   " + s[1] + "   " + s[2];
 }
 
+#endif
+
 int Action(char& o)
 {
 	Menu menu;
@@ -400,6 +404,8 @@ int Action(char& o)
 
 	switch (o)
 	{
+#if MODE == 0
+
 	case 75:
 		if (active != 0) --active;
 		else return 0;
@@ -433,6 +439,7 @@ int Action(char& o)
 		}
 		else return 0;
 		break;
+#endif
 
 	case 8:
 
@@ -502,8 +509,6 @@ int Action(char& o)
 			window.display();
 		}
 #endif
-		return 1;
-
 	default:
 		return 0;
 	}
@@ -514,6 +519,8 @@ int Action(char& o)
 
 void GameScreen()
 {
+#if MODE == 0
+
 	char o;
 	
 	while (1)
@@ -545,6 +552,229 @@ void GameScreen()
 
 		if (!o) return;
 	}
+
+#elif MODE == 1
+
+	int m1 = 80,
+		m2 = 140,
+		m3 = 30;
+	char o = 1;
+	float sec3 = -4;
+
+	Font font;
+	font.loadFromFile("Bender.ttf");
+
+///// TEXTS /////
+	Text tmoves[2], ttime[2], talert[2], tpause;
+
+	for (int i = 0; i < 2; ++i)
+	{
+		tmoves[i].setFont(font);
+		ttime[i].setFont(font);
+		talert[i].setFont(font);
+
+		tmoves[i].setCharacterSize(30);
+		ttime[i].setCharacterSize(30);
+
+		tmoves[i].setFillColor(Color(0, 0, 85));
+		ttime[i].setFillColor(Color(0, 0, 85));
+		talert[i].setFillColor(Color(0, 0, 85));
+	}
+	talert[0].setCharacterSize(20);
+	talert[1].setCharacterSize(40);
+
+	tmoves[1].setStyle(Text::Bold);
+	ttime[1].setStyle(Text::Bold);
+	talert[0].setStyle(Text::Bold);
+	talert[1].setStyle(Text::Bold);
+
+	tmoves[0].setString(L"Перемещений:");
+	ttime[0].setString(L"Время:");
+	talert[0].setString(L"Нельзя ставить диски большего размера поверх меньших!");
+	talert[1].setString(L"Победа!!!");
+
+	tpause.setFont(font);
+	tpause.setCharacterSize(30);
+	tpause.setFillColor(Color(0, 0, 85));
+	tpause.setString(L"Пауза >");
+
+	tmoves[0].move(10, 10);
+	tmoves[1].move(10 + 210, 10);
+	ttime[0].move(10 + 210 + 70, 10);
+	ttime[1].move(10 + 210 + 70 + 100, 10);
+	talert[0].move(10, 50);
+	talert[1].move(10, 50);
+	tpause.move(500, 10);
+
+///// RECTANGLES /////
+	RectangleShape stver[3], sthor[3], sdisk[6];
+
+	for (int i = 0; i < 3; ++i)
+	{
+		stver[i].setFillColor(Color(192, 192, 192));
+		sthor[i].setFillColor(Color(160, 160, 160));
+
+		stver[i].setSize(Vector2f(10, m2 - 10));
+		sthor[i].setSize(Vector2f(m2, 10));
+
+		stver[i].move(m1 + m2 * i + m3 * i + (m2 / 2) - 5, 310 - m2 + 10);
+		sthor[i].move(m1 + m2 * i + m3 * i, 310);
+
+		stver[i].setOutlineThickness(1);
+		sthor[i].setOutlineThickness(1);
+	}
+
+	for (int i = 0; i < 6; ++i)
+	{
+		sdisk[i].setSize(Vector2f(20 * (i + 1), 20));
+	}
+	sdisk[0].setFillColor(Color(236, 0, 0));
+	sdisk[1].setFillColor(Color(255, 132, 50));
+	sdisk[2].setFillColor(Color(255, 216, 0));
+	sdisk[3].setFillColor(Color(52, 213, 0));
+	sdisk[4].setFillColor(Color(0, 95, 204));
+	sdisk[5].setFillColor(Color(178, 0, 255));
+
+///// GAME SCREEN /////
+	while (window.isOpen())
+	{
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::Closed)
+			{
+				delete stick[0];
+				delete stick[1];
+				delete stick[2];
+				window.close();
+			}	
+
+		///// CLICK ON STICKS /////
+			for (int i = 0; i < 3; ++i)
+			{
+				if (IntRect(m1 + m2 * i + m3 * i, 310 - m2 - 50, m2, m2 + 50 + 30).contains(Mouse::getPosition(window)))
+				{
+					active = i;
+
+					if (event.type == Event::MouseButtonReleased && event.mouseButton.button == Mouse::Left)
+					{
+						if (picked)
+						{
+							if (stick[active]->Put(picked))
+							{
+								picked = nullptr;
+								if (from != active)
+								{
+									++moves;
+									timer = clk.getElapsedTime().asSeconds();
+								}
+							}
+							else sec3 = clk.getElapsedTime().asSeconds();
+						}
+						else
+						{
+							picked = stick[active]->Pick();
+							from = active;
+						}
+					}
+				}
+			}
+
+		///// CLICK ON PAUSE /////
+			if (event.type == Event::MouseButtonReleased && event.mouseButton.button == Mouse::Left)
+			{
+				if (IntRect(500, 15, 100, 25).contains(Mouse::getPosition(window)))
+				{
+					o = 8;
+					Action(o);
+				}
+			}
+		}
+
+		window.clear(Color::White);
+
+	///// TIMER AND MOVES /////
+		timer = clk.getElapsedTime().asSeconds();
+
+		tmoves[1].setString(to_string(moves));
+		ttime[1].setString(to_string(timer / 60) + ':' + to_string((timer % 60) / 10) + to_string((timer % 60) % 10));
+
+		for (int i = 0; i < 2; ++i)
+		{
+			window.draw(tmoves[i]);
+			window.draw(ttime[i]);
+		}
+
+	///// WRONG PLACEMENT ALERT /////
+		if ((clk.getElapsedTime().asSeconds() - sec3) <= 3)
+		{
+			cout << "\a";
+			window.draw(talert[0]);
+		}
+
+	///// PAUSE BUTTON COLORING /////
+		tpause.setFillColor(Color(0, 0, 85));
+		if (IntRect(500, 15, 100, 25).contains(Mouse::getPosition(window)))
+			tpause.setFillColor(Color(252, 0, 85));
+		window.draw(tpause);
+
+	///// STICKS OUTLINE COLORING /////
+		for (int i = 0; i < 3; ++i)
+		{
+			stver[i].setOutlineColor(Color(0, 0, 0, 0));
+			sthor[i].setOutlineColor(Color(0, 0, 0, 0));
+
+			if (IntRect(m1 + m2 * active + m3 * active, 310 - m2 - 50, m2, m2 + 50 + 30).contains(Mouse::getPosition(window)))
+			{
+				stver[active].setOutlineColor(Color(252, 0, 85));
+				sthor[active].setOutlineColor(Color(252, 0, 85));
+			}
+			
+			window.draw(stver[i]);
+			window.draw(sthor[i]);
+		}
+
+	///// DISKS DRAWING /////
+		if (picked)
+		{
+			sdisk[picked->Size() - 1].setPosition(
+				m1 + 10 * (5 - picked->Size() + 1) + 10 + (m2 + m3) * active,
+				310 - 20 * (5 - 0 + 1) - 20 - 100);
+		}
+
+		for (int i = num - 1; i >= 0; --i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				if (stick[j]->Layer(i))
+					sdisk[stick[j]->Layer(i) - 1].setPosition(
+						m1 + 10 * (5 - stick[j]->Layer(i) + 1) + 10 + (m2 + m3) * j,
+						310 - 20 * (i + 0) - 20);
+			}
+
+			window.draw(sdisk[i]);
+		}
+
+	///// WIN ALGORITHM /////
+		if (win)
+		{
+			cout << "\a";
+			sec3 = clk.getElapsedTime().asSeconds();
+			window.draw(talert[1]);
+			window.display();
+			while ((clk.getElapsedTime().asSeconds() - sec3) <= 3);
+			return;
+		}
+
+	///// DISPLAY ALL /////
+		window.display();
+
+	///// ADDITIONAL CONDITIONS /////
+		if (stick[2]->Cnt() == (num - 1)) win = 1;
+		if (!o) return;
+	}
+
+#endif
 }
 
 int ScoresScreen()
@@ -721,7 +951,7 @@ int ScoresScreen()
 	Font font;
 	font.loadFromFile("Bender.ttf");
 
-///// RECORDS WINDOW TEXTS /////
+///// RECORDS SCREEN TEXTS /////
 	Text tname[10], tdots[10],
 		tscore[10], ttime[10], cont;
 
@@ -752,7 +982,7 @@ int ScoresScreen()
 	cont.move(270, 10 + 30 * 10);
 	cont.setString(L"Продолжить >");
 
-///// NAME WINDOW TEXTS /////
+///// NAME SCREEN TEXTS /////
 	Text tuname[9];
 
 	for (int i = 0; i < 9; ++i)
@@ -812,7 +1042,7 @@ int ScoresScreen()
 		{
 			if ((moves < score[9]) || ((moves == score[9]) && (timer <= time[9])))
 			{
-			///// NAME WINDOW /////
+			///// NAME SCREEN /////
 				n = 1;
 				int ex = 0;
 				while (window.isOpen() && !ex)
@@ -857,7 +1087,7 @@ int ScoresScreen()
 
 						for (int j = 1; j <= 5; ++j)
 						{
-							tuname[j].setString(uname[i - 1]);
+							tuname[j].setString(uname[j - 1]);
 
 							tuname[j].setFillColor(Color(0, 0, 85));
 							tuname[6].setFillColor(Color(0, 0, 85));
@@ -909,7 +1139,7 @@ int ScoresScreen()
 					str[n] = uname;
 					str[n] += "\t" + to_string(moves) + "\t" + to_string(timer);
 
-				///// SETUPS FOR RECORDS WINDOW /////
+				///// SETUPS FOR RECORDS SCREEN /////
 					for (i = 0; i < 10; ++i)
 					{
 						score[i] = 0;
@@ -948,7 +1178,7 @@ int ScoresScreen()
 	}
 	else cout << "Ошибка чтения из файла рекордов!" << endl;
 
-///// RECORDS WINDOW /////
+///// RECORDS SCREEN /////
 	while (window.isOpen())
 	{
 		Event event;
