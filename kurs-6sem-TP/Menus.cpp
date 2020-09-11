@@ -1207,8 +1207,8 @@ int ScoresScreen()
 			window.draw(tdots[i]);
 			window.draw(tscore[i]);
 			window.draw(ttime[i]);
-			window.draw(cont);
 		}
+		window.draw(cont);
 
 		window.display();
 	}

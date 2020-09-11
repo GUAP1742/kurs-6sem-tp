@@ -4,8 +4,6 @@ using namespace sf;
 
 int main()
 {
-#if MODE == 0
-
     setlocale(LC_ALL, "Rus");
 
     int n, cont = 1;
@@ -13,27 +11,14 @@ int main()
     Start();
     while (cont)
     {
-        n = Mode();
-        cont = Game(n);
-    }
-
-    return 0;
-
-#elif MODE == 1
-
-    int n, cont = 1;
-
-    Start();
-    while (cont)
-    {
+#if MODE == 1
         while (MainMenu());
+#endif
         n = Mode();
         cont = Game(n);
     }
 
     return 0;
-
-#endif
 }
 
        
